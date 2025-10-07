@@ -1,6 +1,13 @@
-import { Dialog, Portal, CloseButton, Button, Stack } from "@chakra-ui/react";
+import {
+  Dialog,
+  Portal,
+  CloseButton,
+  Button,
+  Stack,
+  Field,
+  Input,
+} from "@chakra-ui/react";
 import type { User, UpdateUserData } from "../types/user";
-import { UserForm } from "./UserForm";
 import { useState } from "react";
 import type { ReactNode } from "react";
 import { toaster } from "./ui/toaster";
@@ -20,12 +27,25 @@ export const EditUserDialog = ({
 }: EditUserDialogProps) => {
   const [isOpen, setIsOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [formData, setFormData] = useState({
+    name: user.name,
+    zipCode: user.zipCode,
+  });
 
-  const handleSave = async (data: UpdateUserData) => {
+  const handleSave = async () => {
+    if (!formData.name || !formData.zipCode) {
+      toaster.create({
+        title: "Error",
+        description: "Please fill in all fields",
+        type: "error",
+      });
+      return;
+    }
+
     setIsLoading(true);
 
     try {
-      await userService.updateUser(user.id, data);
+      await userService.updateUser(user.id, formData);
       toaster.create({
         title: "Success",
         description: "User updated successfully",
@@ -33,7 +53,7 @@ export const EditUserDialog = ({
       });
 
       setIsOpen(false);
-      if (onSave) onSave(user, data);
+      if (onSave) onSave(user, formData);
     } catch (error) {
       toaster.create({
         title: "Error",
@@ -61,11 +81,33 @@ export const EditUserDialog = ({
               <Dialog.Title>{`Edit User ${user.name}`}</Dialog.Title>
             </Dialog.Header>
             <Dialog.Body>
-              <UserForm
-                user={user}
-                onSubmit={handleSave}
-                isLoading={isLoading}
-              />
+              <Stack gap="5">
+                <Field.Root>
+                  <Field.Label>Name</Field.Label>
+                  <Input
+                    value={formData.name}
+                    onChange={(e) =>
+                      setFormData((prev) => ({ ...prev, name: e.target.value }))
+                    }
+                    required
+                    disabled={isLoading}
+                  />
+                </Field.Root>
+                <Field.Root>
+                  <Field.Label>Zip Code</Field.Label>
+                  <Input
+                    value={formData.zipCode}
+                    onChange={(e) =>
+                      setFormData((prev) => ({
+                        ...prev,
+                        zipCode: e.target.value,
+                      }))
+                    }
+                    required
+                    disabled={isLoading}
+                  />
+                </Field.Root>
+              </Stack>
             </Dialog.Body>
             <Dialog.Footer>
               <Stack direction="row" gap="2">
@@ -76,7 +118,11 @@ export const EditUserDialog = ({
                 >
                   Cancel
                 </Button>
-                <Button type="submit" disabled={isLoading} colorPalette="blue">
+                <Button
+                  onClick={handleSave}
+                  disabled={isLoading}
+                  colorPalette="blue"
+                >
                   Save
                 </Button>
               </Stack>
