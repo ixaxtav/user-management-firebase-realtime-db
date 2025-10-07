@@ -28,7 +28,13 @@ export const UserTable = ({ users }: UserTableProps) => {
       </Table.Header>
       <Table.Body>
         {users.map((user) => (
-          <Table.Row key={user.id}>
+          <Table.Row
+            key={user.id}
+            _hover={{
+              bg: "gray.50",
+            }}
+            transition="background-color 0.2s"
+          >
             <Table.Cell>{user.id}</Table.Cell>
             <Table.Cell>{user.name}</Table.Cell>
             <Table.Cell>{user.zipCode}</Table.Cell>
